@@ -89,3 +89,7 @@ def interesting_interactions(l, all_inner, all_outer):
             interesting_interaction.append(string)
     return(interesting_interaction)
 
+def printing(list_for_printing, filename):
+    with open(filename, "w") as f:
+        for i in list_for_printing:
+            f.write(i+"\n")
