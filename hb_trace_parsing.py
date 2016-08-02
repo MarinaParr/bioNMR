@@ -27,7 +27,7 @@ def all_interactions(filename, n):
             st = []
             k = 0
             while k != (len(d[key])//n):
-                st.append(str((sum(d[key][k*20:k*20+20]))))
+                st.append(str(int((255-sum(d[key][k*n:k*n+n])*255/n))))
                 k += 1
             d[key] = st
         l_inn = []
@@ -74,22 +74,68 @@ def all_interactions(filename, n):
                     all_outer.append(out_int_ac+"\t"+"\t".join([str(0) for x in range(length)]))
         return(all_inner, all_outer)
 
-def interesting_interactions(l, all_inner, all_outer):
+def interesting_interactions(list_of_interesting_residues, all_inner, all_outer):
     import re
+    import os
     interesting_interaction = []
+    res_one_letter = {"ALA": "A",
+        "ARG": "R",
+        "ASN": "N",
+        "ASP": "D",
+        "CYS": "C",
+        "GLU": "E",
+        "GLN": "Q",
+        "GLY": "G",
+        "HIS": "H",
+        "HIE": "H",
+        "ILE": "I",
+        "LEU": "L",
+        "LYS": "K",
+        "MET": "M",
+        "PHE": "F",
+        "PRO": "P",
+        "SER": "S",
+        "THR": "T",
+        "TRP": "W",
+        "TYR": "Y",
+        "VAL": "V",}
     for string in all_inner:
         elems = string.split("\t")
         name = re.split('~|::|--', elems[0])
-        if (name[0] in l) or (name[3] in l):
+        if (name[0] in list_of_interesting_residues) or (name[3] in list_of_interesting_residues):
             interesting_interaction.append(string)
     for string in all_outer:
         elems = string.split("\t")
         name = re.split('~|::|--', elems[0])
-        if (name[0] in l) or (name[3] in l):
+        if (name[0] in list_of_interesting_residues) or (name[3] in list_of_interesting_residues):
             interesting_interaction.append(string)
-    return(interesting_interaction)
-
-def printing(list_for_printing, filename):
-    with open(filename, "w") as f:
-        for i in list_for_printing:
-            f.write(i+"\n")
+    if (not os.path.isdir("img")):
+        os.mkdir("img")
+    for elem in list_of_interesting_residues:
+        for i in range(48):
+            with open("img/hb_trace.dat."+str(i)+".dat", "w") as f:
+                intss = []
+                for element in interesting_interaction:
+                    name = element.split("\t")[0]
+                    items = re.split('~|::|--', name)
+                    if elem+str(i) == items[0]+items[1] or elem+str(i) == items[3]+items[4]:
+                        data = element.split("\t")
+                        intss.append(data)
+                length = len(intss[0])
+                for ints in intss:
+                        name = ints[0]
+                        ne = re.split('~|::|--', name)
+                        acid_1 = res_one_letter[ne[0][0:3]]
+                        num_1 = ne[0][3:5]
+                        acid_2 = res_one_letter[ne[0][0:3]]
+                        num_2 = ne[0][3:5]
+                        name_2 = "["+ne[1]+"]"+acid_1+"-"+num_1+":"+ne[2]+"---"+"["+ne[4]+"]"+acid_2+"-"+num_2+":"+ne[5]
+                        f.write(name_2+" ")
+                f.write("\n")
+                time = 10
+                for j in range(1, length):
+                    f.write(str(time)+" ")
+                    for ints in intss:
+                        f.write(ints[j]+" ")
+                    time += 20
+                    f.write("\n")
